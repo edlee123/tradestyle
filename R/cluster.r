@@ -49,7 +49,7 @@ setup.cluster <- function(expr = NULL, varlist = NULL, envir = .GlobalEnv, cores
 	temp = clusterEvalQ(cl, {
 		# set up each worker.
 		library(quantmod)
-		library(SIT)
+		# library(SIT)
 		
 		#con = gzcon(file('../sit', 'rb')) 
 		#	source(con) 

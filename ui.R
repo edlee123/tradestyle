@@ -1,4 +1,8 @@
+library(ggvis)
+library(magrittr)
+library(dplyr)
 
+list.files(path = "./R", full.names = T) %>% lapply(., FUN = source)
 
 gpdat = readRDS("./data/gpdat.rds")
 models = readRDS("./data/models2.rds")

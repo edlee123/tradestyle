@@ -30,7 +30,7 @@ bt.run.share.ex.example.match.adjusted.unadjusted = function()
 	#*****************************************************************
 	# Adjusted
 	#*****************************************************************
-	library(SIT)
+	# library(SIT)
 	library(quantmod)
 	
 	data = load.data(T)
@@ -92,7 +92,7 @@ bt.run.share.ex.example.commissions.adjusted.unadjusted = function()
 	#*****************************************************************
 	# Adjusted
 	#*****************************************************************
-	library(SIT)
+	# library(SIT)
 	library(quantmod)
 	
 	data = load.data(T)

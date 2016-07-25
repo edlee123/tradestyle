@@ -2,8 +2,11 @@ library(shiny)
 library(ggvis)
 library(dplyr)
 library(magrittr)
+library(PerformanceAnalytics)
+library(quantmod)
 library(DT)
-library(ggplot2)
+
+list.files(path = "./R", full.names = T) %>% lapply(., FUN = source)
 
 gpdat = readRDS("./data/gpdat.rds")
 models = readRDS("./data/models2.rds")
@@ -16,7 +19,7 @@ shinyServer(function(input, output, session) {
       droplevels %>%
       filter(dt >= input$year[1] & dt <= input$year[2] ) %>%
       ggvis(~dt, ~ val, stroke = ~label) %>%
-      add_axis("x", title = "Date", properties = axis_props(
+      ggvis::add_axis("x", title = "Date", properties = axis_props(
         labels = list(angle = 45, align = "left", fontSize = 10),
         title = list(fontSize = 12)
       )) %>%
