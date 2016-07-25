@@ -61,13 +61,13 @@ shinyServer(function(input, output, session) {
       lookup <- lapply(models_to_chart, function(x)models[[x]])
       names(lookup) <- models_to_chart
       out = plotbt.strategy.sidebyside(lookup, return.table=T, make.plot = F)
+      return(DT::datatable(out, options = 
+                             list(searching = FALSE, 
+                                  paging = F, 
+                                  bInfo = F, 
+                                  style = 'bootstrap',
+                                  selection = "single")) )      
     }
-    DT::datatable(out, options = 
-                    list(searching = FALSE, 
-                         paging = F, 
-                         bInfo = F, 
-                         style = 'bootstrap',
-                         selection = "single")) 
   })
   
   #' Calculate calendar rets.  Will extract first full year.
