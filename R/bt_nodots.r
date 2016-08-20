@@ -24,7 +24,7 @@
 # Align dates, faster version of merge function
 #' @export 
 ###############################################################################
-bt.merge <- function
+bt_merge <- function
 (
 	b,				# enviroment with symbols time series
 	align = c('keep.all', 'remove.na'),	# alignment type
@@ -53,7 +53,7 @@ bt.merge <- function
 	# trim if date is supplied	
 	if(!is.null(dates)) { 
 		class(unique.dates) = c('POSIXct', 'POSIXt')	
-		temp = make.xts(integer(len(unique.dates)), unique.dates) 		
+		temp = make_xts(integer(len(unique.dates)), unique.dates) 		
 		unique.dates = attr(temp[dates], 'index')
 	}
 		
@@ -99,7 +99,7 @@ bt.merge <- function
 #' @export 
 ###############################################################################
 # Will handle OHLC, and look for certain column names e.g. Open, High etc.
-bt.prep <- function
+bt_prep <- function
 (
 	b,				# enviroment with symbols time series
 	align = c('keep.all', 'remove.na'),	# alignment type
@@ -115,19 +115,19 @@ bt.prep <- function
 	
 	if( nsymbols > 1 ) {
 		# merge
-		out = bt.merge(b, align, dates)
+		out = bt_merge(b, align, dates)
 		
 		for( i in 1:nsymbols ) {
 			temp = coredata( b[[ symbolnames[i] ]] )[ out$date.map[,i],, drop = FALSE]
-			b[[ symbolnames[i] ]] = iif(basic, temp, make.xts( temp, out$all.dates))
+			b[[ symbolnames[i] ]] = iif(basic, temp, make_xts( temp, out$all.dates))
 		
 			# fill gaps logic
-			map.col = find.names('Close,Volume,Open,High,Low,Adjusted', b[[ symbolnames[i] ]])
+			map.col = find_names('Close,Volume,Open,High,Low,Adjusted', b[[ symbolnames[i] ]])
 			if(fill.gaps & !is.na(map.col$Close)) {	
 				close = coredata(b[[ symbolnames[i] ]][,map.col$Close])
 					n = len(close)
 					last.n = max(which(!is.na(close)))
-				close = ifna.prev(close)
+				close = ifna_prev(close)
 				if(last.n + 5 < n) close[last.n : n] = NA
 				b[[ symbolnames[i] ]][, map.col$Close] = close
 					index = !is.na(close)	
@@ -147,18 +147,18 @@ bt.prep <- function
 
 				j = map.col$Adjusted
 				if(!is.null(j)) {
-					b[[ symbolnames[i] ]][index, j] = ifna.prev(b[[ symbolnames[i] ]][index, j])
+					b[[ symbolnames[i] ]][index, j] = ifna_prev(b[[ symbolnames[i] ]][index, j])
 				}
 				
 				
 				#for(j in setdiff(1:ncol( b[[ symbolnames[i] ]] ), unlist(map.col))) {
-				#	b[[ symbolnames[i] ]][index, j] = ifna.prev(b[[ symbolnames[i] ]][index, j])				
+				#	b[[ symbolnames[i] ]][index, j] = ifna_prev(b[[ symbolnames[i] ]][index, j])				
 				#}				
 			}
 		}	
 	} else {
 		if(!is.null(dates)) b[[ symbolnames[1] ]] = b[[ symbolnames[1] ]][dates,]	
-		out = list(all.dates = index.xts(b[[ symbolnames[1] ]]) )
+		out = list(all.dates = index_xts(b[[ symbolnames[1] ]]) )
 		if(basic) b[[ symbolnames[1] ]] = coredata( b[[ symbolnames[1] ]] )
 	}
 
@@ -168,7 +168,7 @@ bt.prep <- function
 	# empty matrix		
 	dummy.mat = matrix(double(), len(out$all.dates), nsymbols)
 		colnames(dummy.mat) = symbolnames
-		if(!basic) dummy.mat = make.xts(dummy.mat, out$all.dates)
+		if(!basic) dummy.mat = make_xts(dummy.mat, out$all.dates)
 		
 	# weight matrix holds signal and weight information		
 	b$weight = dummy.mat
@@ -190,7 +190,7 @@ bt.prep <- function
 
 # matrix form
 #' @export 
-bt.prep.matrix <- function
+bt_prep_matrix <- function
 (
 	b,				# enviroment with symbols time series
 	align = c('keep.all', 'remove.na'),	# alignment type
@@ -203,7 +203,7 @@ bt.prep.matrix <- function
 	
 	# merge
 	if(!is.null(dates)) { 	
-		temp = make.xts(1:len(b$dates), b$dates)
+		temp = make_xts(1:len(b$dates), b$dates)
 		temp = temp[dates] 
 		index = as.vector(temp)
 		
@@ -225,7 +225,7 @@ bt.prep.matrix <- function
 	}
 	
 	# empty matrix		
-	dummy.mat = iif(basic, b$Cl, make.xts(b$Cl, b$dates))
+	dummy.mat = iif(basic, b$Cl, make_xts(b$Cl, b$dates))
 		
 	# weight matrix holds signal and weight information		
 	b$weight = NA * dummy.mat
@@ -236,16 +236,16 @@ bt.prep.matrix <- function
 }
 
 
-bt.prep.matrix.test <- function() {
+bt_prep_matrix_test <- function() {
 	#*****************************************************************
 	# Load historical data
 	#****************************************************************** 
-	load.packages('quantmod')
+	load_packages('quantmod')
 	# example csv file holds returns
 	# Date ,A,B
 	# Jan-70,0.01,0.02
-	returns = read.xts('Example.csv', date.fn=function(x) paste('1',x), format='%d %b-%y')
-	prices = bt.apply.matrix(1 + returns, cumprod)
+	returns = read_xts('Example.csv', date.fn=function(x) paste('1',x), format='%d %b-%y')
+	prices = bt_apply_matrix(1 + returns, cumprod)
 	
 	data <- new.env()
 		data$symbolnames = colnames(prices)
@@ -253,7 +253,7 @@ bt.prep.matrix.test <- function() {
 		data$fields = 'Cl'
 		data$Cl = prices				
 		
-	bt.prep.matrix(data)
+	bt_prep_matrix(data)
 	
 	#*****************************************************************
 	# Code Strategies
@@ -261,7 +261,7 @@ bt.prep.matrix.test <- function() {
 	# Buy & Hold	
 	data$weight[] = NA
 		data$weight[] = 1
-	buy.hold = bt.run.share(data)
+	buy.hold = bt_run_share(data)
 	
 	#*****************************************************************
 	# Create Report
@@ -271,21 +271,21 @@ bt.prep.matrix.test <- function() {
 }
 
 ###############################################################################
-# Remove symbols from enviroment
+# Remove symbols_from enviroment
 #' @export 
 ###############################################################################
-bt.prep.remove.symbols.min.history <- function
+bt_prep_remove_symbols_min_history <- function
 (
 	b, 					# enviroment with symbols time series
 	min.history = 1000	# minmum number of observations
 ) 
 {
-	bt.prep.remove.symbols(b, which( count(b$prices, side=2) < min.history ))
+	bt_prep_remove_symbols(b, which( count(b$prices, side=2) < min.history ))
 }
 
 
 #' @export 
-bt.prep.remove.symbols <- function
+bt_prep_remove_symbols <- function
 (
 	b, 					# enviroment with symbols time series
 	index				# index of symbols to remove
@@ -298,7 +298,7 @@ bt.prep.remove.symbols <- function
 		b$weight = b$weight[, -index]
 		b$execution.price = b$execution.price[, -index]
 		
-		env.rm(b$symbolnames[index], b)
+		env_rm(b$symbolnames[index], b)
 		b$symbolnames = b$symbolnames[ -index]
 	}
 }
@@ -316,11 +316,11 @@ bt.prep.remove.symbols <- function
 #'
 #' @examples
 #' \dontrun{ 
-#' bt.prep.trim(data, endpoints(data$prices, 'months'))
-#' bt.prep.trim(data, '2006::')
+#' bt_prep_trim(data, endpoints(data$prices, 'months'))
+#' bt_prep_trim(data, '2006::')
 #' }
 #' @export 
-bt.prep.trim <- function
+bt_prep_trim <- function
 (
 	b, 				# enviroment with symbols time series
 	dates = NULL	# subset of dates
@@ -348,7 +348,7 @@ bt.prep.trim <- function
 # Helper function to backtest for type='share'
 #' @export 
 ###############################################################################
-bt.run.share <- function
+bt_run_share <- function
 (
 	b,					# enviroment with symbols time series
 	prices = b$prices,	# prices
@@ -366,17 +366,17 @@ bt.run.share <- function
 {
 	# make sure that prices are available, assume that
 	# weights account for missing prices i.e. no price means no allocation
-	prices[] = bt.apply.matrix(coredata(prices), ifna.prev)	
+	prices[] = bt_apply_matrix(coredata(prices), ifna_prev)	
 
 	weight = mlag(weight, do.lag - 1)
 	do.lag = 1
 
 	if(clean.signal)
-		weight[] = bt.exrem(weight)
+		weight[] = bt_exrem(weight)
 	
 	weight = (capital / prices) * weight
 	
-	bt.run(b,
+	bt_run(b,
 		trade.summary = trade.summary,
 		do.lag = do.lag,
 		do.CarryLastObservationForwardIfNA = do.CarryLastObservationForwardIfNA,
@@ -397,26 +397,26 @@ bt.run.share <- function
 # For 'weight' back-test, the default action is to lage weights by one day,
 # because weights are derived using all the information avalaible today, 
 # so we can only implement these weights tomorrow:
-#   portfolio.returns = lag(weights,1) * returns = weights * ( p / lag(p,1) - 1 )
+#   portfolio_returns = lag(weights,1) * returns = weights * ( p / lag(p,1) - 1 )
 # user can specify a different lag for weights, by changing the do.lag parameter.
 #
 # For example, for the end of the month strategy: if we open position at the close
 # on the 30th, hold position on the 31st and sell it at the close on the 1st. If our
 # weights have 0 on the 30th, 1 on the 31st, 1 on the 1st, and 0 on the 2nd, we
-# can specify do.lag = 0 to get correct portfolio.returns
+# can specify do.lag = 0 to get correct portfolio_returns
 #
 # Alternatively, if our weights have 0 on the 29th, 1 on the 30st, 1 on the 31st, and 0 on the 1nd, we
-# can leave do.lag = 1 to get correct portfolio.returns
+# can leave do.lag = 1 to get correct portfolio_returns
 #
-# For 'share' back-test, the portfolio returns:
-#   portfolio.returns = lag(shares,1) * ( p - lag(p,1) ) / ( lag(shares,1) * lag(p,1) )
+# For 'share' back-test, the portfolio_returns:
+#   portfolio_returns = lag(shares,1) * ( p - lag(p,1) ) / ( lag(shares,1) * lag(p,1) )
 # 
 ###############################################################################
 # some operators do not work well on xts
 # weight[] = apply(coredata(weight), 2, ifna_prev)
 #' @export 
 ###############################################################################
-bt.run <- function
+bt_run <- function
 (
 	b,					# enviroment with symbols time series
 	trade.summary = F, 	# flag to create trade summary
@@ -445,7 +445,7 @@ bt.run <- function
 
 	# backfill
 	if(do.CarryLastObservationForwardIfNA)
-		weight[] = apply(coredata(weight), 2, ifna.prev)
+		weight[] = apply(coredata(weight), 2, ifna_prev)
 
 	weight[is.na(weight)] = 0
 
@@ -476,18 +476,18 @@ bt.run <- function
 		ret = prices
 	}
 	
-	#weight = make.xts(weight, b$dates)
+	#weight = make_xts(weight, b$dates)
 	temp = b$weight
 		temp[] = weight
 	weight = temp
 	
 	
 	# prepare output
-	bt = bt.summary(weight, ret, type, b$prices, capital, commission)
+	bt = bt_summary(weight, ret, type, b$prices, capital, commission)
 		bt$dates.index = dates.index
-	bt = bt.run.trim.helper(bt, dates.index)
+	bt = bt_run_trim_helper(bt, dates.index)
 
-	if( trade.summary ) bt$trade.summary = bt.trade.summary(b, bt)
+	if( trade.summary ) bt_trade_summary = bt_trade_summary(b, bt)
 
 	if( !silent ) {
 		# print last signal / weight observation
@@ -506,7 +506,7 @@ bt.run <- function
 
 # trim bt object, used internally
 #' @export 
-bt.run.trim.helper = function(bt, dates.index) {
+bt_run_trim_helper = function(bt, dates.index) {
 	n.dates = len(dates.index) 
 	for(n in ls(bt)) {
 		if( !is.null(dim(bt[[n]])) ) {
@@ -519,7 +519,7 @@ bt.run.trim.helper = function(bt, dates.index) {
 	bt$equity = bt$equity / as.double(bt$equity[1])
 	bt$best = max(bt$ret)
 	bt$worst = min(bt$ret)
-	bt$cagr = compute.cagr(bt$equity)
+	bt$cagr = compute_cagr(bt$equity)
 	
 	bt
 }
@@ -541,7 +541,7 @@ bt.run.trim.helper = function(bt, dates.index) {
 # Backtest summary
 #' @export 
 ###############################################################################
-bt.summary <- function
+bt_summary <- function
 (
 	weight, 	# signal / weights matrix
 	ret, 		# returns for type='weight' and prices for type='share'
@@ -592,8 +592,8 @@ bt.summary <- function
 				rowSums(abs(com.weight - mlag(com.weight)) * commission$percentage, na.rm=T)
 				- rowSums(sign(abs(com.weight - mlag(com.weight))) * commission$fixed, na.rm=T)
 		bt$ret = temp
-    	#bt$ret = make.xts(rowSums(ret * weight) - rowSums(abs(weight - mlag(weight))*commission, na.rm=T), index.xts(ret))    	
-    	#bt$ret = make.xts(rowSums(ret * weight), index.xts(ret))    	
+    	#bt$ret = make_xts(rowSums(ret * weight) - rowSums(abs(weight - mlag(weight))*commission, na.rm=T), index_xts(ret))    	
+    	#bt$ret = make_xts(rowSums(ret * weight), index_xts(ret))    	
     } else {
     	bt$share = weight
     	bt$capital = capital
@@ -603,8 +603,8 @@ bt.summary <- function
 		#prices1 = coredata(prices)
 		#prices1[is.na(prices1)] = ifna(mlag(prices1), NA)[is.na(prices1)]				
 		#prices[] = prices1
-		prices[] = bt.apply.matrix(coredata(prices), ifna.prev)	
-		close.prices[] = bt.apply.matrix(coredata(close.prices), ifna.prev)	
+		prices[] = bt_apply_matrix(coredata(prices), ifna_prev)	
+		close.prices[] = bt_apply_matrix(coredata(close.prices), ifna_prev)	
 		
 		# new logic
 		#cash = capital - rowSums(bt$share * mlag(prices), na.rm=T)
@@ -623,11 +623,11 @@ index[1] = T
 							
 			totalcash = NA * cash
 				totalcash[index] = cash[index]
-			totalcash = ifna.prev(totalcash)
+			totalcash = ifna_prev(totalcash)
 				totalcash = ifna(totalcash,0)	# check this
 
 		
-		# We can introduce transaction cost to portfolio returns as
+		# We can introduce transaction cost to portfolio_returns as
 		# abs(bt$share - mlag(bt$share)) * 0.01
 		
 		portfolio.ret = (totalcash  + rowSums(bt$share * prices, na.rm=T)
@@ -643,7 +643,7 @@ index[1] = T
 
 		
 		bt$weight[is.na(bt$weight)] = 0		
-		#bt$ret = make.xts(ifna(portfolio.ret,0), index.xts(ret))
+		#bt$ret = make_xts(ifna(portfolio.ret,0), index_xts(ret))
 		temp = ret[,1]
 			temp[] = ifna(portfolio.ret,0)
 temp[1] = 0
@@ -658,21 +658,21 @@ temp[1] = 0
 	if(len(bankrupt) > 0) bt$ret[bankrupt[1]:n] = -1
         
     bt$equity = cumprod(1 + bt$ret)
-    bt$cagr = compute.cagr(bt$equity)
+    bt$cagr = compute_cagr(bt$equity)
     	
     return(bt)    
 }
 
-bt.summary.test <- function() {
+bt_summary_test <- function() {
     #*****************************************************************
     # Load historical data
     #******************************************************************
-    load.packages('quantmod')
+    load_packages('quantmod')
 
     data <- new.env()
     getSymbols('EEM', src = 'yahoo', from = '1980-01-01', env = data, auto.assign = T)
     
-    bt.prep(data, align='keep.all', dates='2013:08::2013:08:10')
+    bt_prep(data, align='keep.all', dates='2013:08::2013:08:10')
 	    buy.date = '2013:08:05'
 		sell.date = '2013:08:06'
     
@@ -688,7 +688,7 @@ bt.summary.test <- function() {
 	    data$weight[buy.date] = 1
 	    data$weight[sell.date] = 0
 	    commission = list(cps = 0.0, fixed = 0.0, percentage = 1/100)
-	model3 = bt.run(data, commission = commission, silent = T)
+	model3 = bt_run(data, commission = commission, silent = T)
 	
 	model3$ret
 	#There is 1% drop on 5th due to buying stock, and on the 6th return is 0.49 = 0.5 - 0.01 (commission)
@@ -699,7 +699,7 @@ bt.summary.test <- function() {
 	    data$weight[buy.date] = 1
 	    data$weight[sell.date] = 0
 	    commission = list(cps = 0.0, fixed = 0.0, percentage = 1/100)
-	model3 = bt.run.share(data, commission = commission, capital = 100000, silent = T)
+	model3 = bt_run_share(data, commission = commission, capital = 100000, silent = T)
 
 	model3$ret
 	#There is 1% drop on 5th due to buying stock, and on the 6th return is 
@@ -712,13 +712,13 @@ bt.summary.test <- function() {
 # Remove all leading NAs in model equity
 #' @export 
 ###############################################################################
-bt.trim <- function
+bt_trim <- function
 (
 	...,
 	dates = '::'
 ) 
 {	
-	models = variable.number.arguments( ... )
+	models = variable_number_arguments( ... )
 
 	for( i in 1:len(models) ) {
 		bt = models[[i]]
@@ -742,7 +742,7 @@ bt.trim <- function
 
 		    bt$best = max(bt$ret)
 			bt$worst = min(bt$ret)
-			bt$cagr = compute.cagr(bt$equity)
+			bt$cagr = compute_cagr(bt$equity)
 		}
 		
 		models[[i]] = bt
@@ -751,16 +751,16 @@ bt.trim <- function
 }
 
 
-bt.trim.test <- function() {
+bt_trim_test <- function() {
     #*****************************************************************
     # Load historical data
     #******************************************************************
-    load.packages('quantmod')
+    load_packages('quantmod')
         
     data <- new.env()
     getSymbols(spl('SPY,GLD'), src = 'yahoo', from = '1980-01-01', env = data, auto.assign = T)
     for(i in ls(data)) data[[i]] = adjustOHLC(data[[i]], use.Adjusted=T)
-    bt.prep(data, align='keep.all')
+    bt_prep(data, align='keep.all')
 
     #*****************************************************************
     # Code Strategies
@@ -769,21 +769,21 @@ bt.trim.test <- function() {
     
     data$weight[] = NA
         data$weight$SPY[] = 1
-    models$SPY = bt.run.share(data, clean.signal=F)
+    models$SPY = bt_run_share(data, clean.signal=F)
 
     data$weight[] = NA
         data$weight$GLD[] = 1
-    models$GLD = bt.run.share(data, clean.signal=F)
+    models$GLD = bt_run_share(data, clean.signal=F)
     
     
-    strategy.performance.snapshoot(bt.trim(models), T)
+    strategy_performance_snapshoot(bt_trim(models), T)
 }
 
 
-# bt.run - really fast with no bells or whisles
+# bt_run - really fast with no bells or whisles
 # working directly with xts is alot slower, so use coredata
 #' @export 	
-bt.run.weight.fast <- function
+bt_run_weight_fast <- function
 (
 	b,					# enviroment with symbols time series
 	do.lag = 1, 		# lag signal
@@ -797,7 +797,7 @@ bt.run.weight.fast <- function
     if(do.lag > 0) weight = mlag(weight, do.lag) # Note k=1 implies a move *forward*  
 	
 	# backfill
-	if(do.CarryLastObservationForwardIfNA) weight[] = apply(coredata(weight), 2, ifna.prev)
+	if(do.CarryLastObservationForwardIfNA) weight[] = apply(coredata(weight), 2, ifna_prev)
     
 	weight[is.na(weight)] = 0
 
@@ -817,7 +817,7 @@ bt.run.weight.fast <- function
 # sales or purchases and dividing it by the average monthly value of the fund's assets
 #' @export 
 ###############################################################################
-compute.turnover <- function
+compute_turnover <- function
 (	
 	bt,		# backtest object
 	b, 		# environment with symbols time series
@@ -838,13 +838,13 @@ compute.turnover <- function
 	
 	if( bt$type == 'weight') {    	    	
 		portfolio.value = rowSums(abs(bt$weight), na.rm=T)
-		portfolio.turnover = rowSums( abs(bt$weight - mlag(bt$weight)), na.rm=T) 
-		portfolio.turnover[ rowSums( !is.na(bt$weight) & !is.na(mlag(bt$weight)) ) == 0 ] = NA
+		portfolio_turnover = rowSums( abs(bt$weight - mlag(bt$weight)), na.rm=T) 
+		portfolio_turnover[ rowSums( !is.na(bt$weight) & !is.na(mlag(bt$weight)) ) == 0 ] = NA
 	} else {
 		prices = mlag(b$prices[bt$dates.index,,drop=F])
 		
 		if( is.null(bt$cash) ) {
-			# logic from bt.summary function				
+			# logic from bt_summary function				
 			cash = bt$capital - rowSums(bt$share * prices, na.rm=T)
 		
 			# find trade dates
@@ -856,22 +856,22 @@ compute.turnover <- function
 								
 			totalcash = NA * cash
 				totalcash[index] = cash[index]
-			totalcash = ifna.prev(totalcash)
+			totalcash = ifna_prev(totalcash)
 		} else
 			totalcash = bt$cash
 		
 		portfolio.value = totalcash + rowSums(bt$share * prices, na.rm=T)
 		
-		portfolio.turnover = rowSums( prices * abs(bt$share - mlag(bt$share)), na.rm=T)
-		portfolio.turnover[ rowSums( !is.na(bt$share) & !is.na(mlag(bt$share)) & !is.na(prices) ) == 0 ] = NA
+		portfolio_turnover = rowSums( prices * abs(bt$share - mlag(bt$share)), na.rm=T)
+		portfolio_turnover[ rowSums( !is.na(bt$share) & !is.na(mlag(bt$share)) & !is.na(prices) ) == 0 ] = NA
 	}
 	
-	if(exclude.first.trade) portfolio.turnover[first] = 0
+	if(exclude.first.trade) portfolio_turnover[first] = 0
 	
-	portfolio.turnover[1:2] = 0
+	portfolio_turnover[1:2] = 0
 	temp = NA * period.index			
 	for(iyear in 2:len(period.index)) {
-		temp[iyear] = sum( portfolio.turnover[ (1+period.index[iyear-1]) : period.index[iyear] ], na.rm=T) / 
+		temp[iyear] = sum( portfolio_turnover[ (1+period.index[iyear-1]) : period.index[iyear] ], na.rm=T) / 
 						mean( portfolio.value[ (1+period.index[iyear-1]) : period.index[iyear] ], na.rm=T)			
 	}
 	
@@ -886,16 +886,16 @@ compute.turnover <- function
 
 
 # debug	
-# write.xts(make.xts(bt$cash, index(bt$weight)), 'cash.csv')
-# write.xts(make.xts(bt$share, index(bt$weight)), 'share.csv')
-# write.xts(prices, 'price.csv')
+# write_xts(make_xts(bt$cash, index(bt$weight)), 'cash.csv')
+# write_xts(make_xts(bt$share, index(bt$weight)), 'share.csv')
+# write_xts(prices, 'price.csv')
 #
-# portfolio.value = make.xts(portfolio.value,index(prices))
-# portfolio.turnover = make.xts(portfolio.turnover,index(prices))
+# portfolio.value = make_xts(portfolio.value,index(prices))
+# portfolio_turnover = make_xts(portfolio_turnover,index(prices))
 # iyear='1998'
 # mean(portfolio.value[iyear])
-# sum(portfolio.turnover[iyear])
-# sum(portfolio.turnover[iyear]) / mean(portfolio.value[iyear])
+# sum(portfolio_turnover[iyear])
+# sum(portfolio_turnover[iyear]) / mean(portfolio.value[iyear])
 	
 
 
@@ -903,7 +903,7 @@ compute.turnover <- function
 # Compute Portfolio Maximum Deviation
 #' @export 
 ###############################################################################
-compute.max.deviation <- function
+compute_max_deviation <- function
 (
 	bt,
 	target.allocation
@@ -918,7 +918,7 @@ compute.max.deviation <- function
 # Backtest Trade summary
 #' @export 
 ###############################################################################
-bt.trade.summary <- function
+bt_trade_summary <- function
 (
 	b, 		# enviroment with symbols time series
 	bt		# backtest object
@@ -988,9 +988,9 @@ bt.trade.summary <- function
 		# prepare output		
 		out = list()
 		out$stats = cbind(
-			bt.trade.summary.helper(trades),
-			bt.trade.summary.helper(trades[trades[, 'weight'] >= 0, ]),
-			bt.trade.summary.helper(trades[trades[, 'weight'] <0, ])
+			bt_trade_summary_helper(trades),
+			bt_trade_summary_helper(trades[trades[, 'weight'] >= 0, ]),
+			bt_trade_summary_helper(trades[trades[, 'weight'] <0, ])
 		)
 		colnames(out$stats) = spl('All,Long,Short')
 		
@@ -1021,7 +1021,7 @@ bt.trade.summary <- function
 # Backtest Trade summary
 #' @export 
 ###############################################################################
-bt.trade.summary.old <- function
+bt_trade_summary_old <- function
 (
 	b, 		# enviroment with symbols time series
 	bt		# backtest object
@@ -1087,13 +1087,13 @@ bt.trade.summary.old <- function
 		# prepare output		
 		out = list()
 		out$stats = cbind(
-			bt.trade.summary.helper(trades),
-			bt.trade.summary.helper(trades[trades[, 'weight'] >= 0, ]),
-			bt.trade.summary.helper(trades[trades[, 'weight'] <0, ])
+			bt_trade_summary_helper(trades),
+			bt_trade_summary_helper(trades[trades[, 'weight'] >= 0, ]),
+			bt_trade_summary_helper(trades[trades[, 'weight'] <0, ])
 		)
 		colnames(out$stats) = spl('All,Long,Short')
 		
-		temp.x = index.xts(weight)
+		temp.x = index_xts(weight)
 		
 		trades = data.frame(coredata(trades))
 			trades$symbol = symbolnames[trades$symbol]
@@ -1112,7 +1112,7 @@ bt.trade.summary.old <- function
 }
 
 
-bt.trade.summary.test <- function() {
+bt_trade_summary_test <- function() {
 test = list(
 	weight1 = matrix(c(0,0,0,1),nc=1),
 	weight2 = matrix(c(0,1,0,0),nc=1),
@@ -1152,7 +1152,7 @@ test = list(
 # helper function
 # [Why Every Trader Should Know and Understand This Formula](http://www.priceactionlab.com/Blog/2015/02/why-every-trader-should-know-and-understand-this-formula/)
 #' @export 
-bt.trade.summary.helper <- function(trades) 
+bt_trade_summary_helper <- function(trades) 
 {		
 	if(nrow(trades) <= 0) return(NA)
 	
@@ -1189,7 +1189,7 @@ bt.trade.summary.helper <- function(trades)
 #
 #' @export 
 ###############################################################################
-bt.change.periodicity <- function
+bt_change_periodicity <- function
 (
 	b,			# enviroment with symbols time series
 	
@@ -1224,13 +1224,13 @@ bt.change.periodicity <- function
 ###############################################################################
 # Apply given function to bt enviroment
 # for example, to compute 10 month moving average each quater 
-# bt.apply.matrix(prices, function(x) mean(last(x,10)), periodicity='months', apply.periodicity='quarters') 
+# bt_apply_matrix(prices, function(x) mean(last(x,10)), periodicity='months', apply.periodicity='quarters') 
 #
 # Make sure not to use a rolling window functions if apply.periodicity is given
 #
 ###############################################################################
 #' @export 
-bt.apply <- function
+bt_apply <- function
 (
 	b,			# enviroment with symbols time series
 	xfun=Cl,	# user specified function
@@ -1255,7 +1255,7 @@ bt.apply <- function
 }
 
 #' @export 
-bt.apply.matrix <- function
+bt_apply_matrix <- function
 (
 	b,			# matrix
 	xfun=Cl,	# user specified function
@@ -1285,7 +1285,7 @@ bt.apply.matrix <- function
 # following function can handle different periodicity and apply.periodicity
 # make sure not to use a rolling window functions if apply.periodicity is given!!!
 #' @export 
-bt.apply.ex <- function
+bt_apply_ex <- function
 (
 	b,			# enviroment with symbols time series
 	xfun=Cl,	# user specified function
@@ -1302,7 +1302,7 @@ bt.apply.ex <- function
 	fill.gaps = F	# fill gaps introduced by having different periodicity
 )
 {
-	temp = bt.apply.setup.helper(b$weight, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
+	temp = bt_apply_setup_helper(b$weight, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
 	period.ends = temp$period.ends
 	apply.period.ends = temp$apply.period.ends
 	map = temp$map
@@ -1357,12 +1357,12 @@ if(is.null(apply.period.ends)) {
 			}
 		}
 }		
-	if(fill.gaps) bt.apply.matrix(out, ifna.prev) else out
+	if(fill.gaps) bt_apply_matrix(out, ifna_prev) else out
 }
 
 # make sure not to use a rolling window functions if apply.periodicity is given!!!
 #' @export 
-bt.apply.matrix.ex <- function
+bt_apply_matrix_ex <- function
 (
 	b,			# matrix
 	xfun=Cl,	# user specified function
@@ -1379,7 +1379,7 @@ bt.apply.matrix.ex <- function
 	fill.gaps = F	# fill gaps introduced by having different periodicity
 )
 {
-	temp = bt.apply.setup.helper(b, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
+	temp = bt_apply_setup_helper(b, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
 	period.ends = temp$period.ends
 	apply.period.ends = temp$apply.period.ends
 	map = temp$map
@@ -1430,12 +1430,12 @@ if(is.null(apply.period.ends)) {
 			}
 		}
 }
-	if(fill.gaps) bt.apply.matrix(out, ifna.prev) else out
+	if(fill.gaps) bt_apply_matrix(out, ifna_prev) else out
 }
 
 
 
-bt.apply.setup.helper <- function(m, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends) {
+bt_apply_setup_helper <- function(m, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends) {
 	if(!is.null(periodicity) && is.null(period.ends))
 		period.ends = endpoints(m, periodicity)
 	if(!is.null(apply.periodicity) && is.null(apply.period.ends))
@@ -1450,7 +1450,7 @@ bt.apply.setup.helper <- function(m, xfun, periodicity, period.ends, apply.perio
 	if(!is.null(apply.period.ends) && !is.null(period.ends)) {
 		map = array(NA, nrow(m))
 			map[period.ends] = 1:len(period.ends)
-			map = ifna.prev(map)
+			map = ifna_prev_map)
 			map = ifna(map,1)
 	}
 	
@@ -1463,7 +1463,7 @@ bt.apply.setup.helper <- function(m, xfun, periodicity, period.ends, apply.perio
 # following function can handle multiple return arrays. i.e. ATR
 # make sure not to use a rolling window functions if apply.periodicity is given!!!
 #' @export 
-bt.apply.ex2 <- function
+bt_apply_ex2 <- function
 (
 	b,			# enviroment with symbols time series
 	xfun=Cl,	# user specified function
@@ -1480,7 +1480,7 @@ bt.apply.ex2 <- function
 	fill.gaps = F	# fill gaps introduced by having different periodicity
 )
 {
-	temp = bt.apply.setup.helper(b$weight, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
+	temp = bt_apply_setup_helper(b$weight, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
 	period.ends = temp$period.ends
 	apply.period.ends = temp$apply.period.ends
 	map = temp$map
@@ -1497,30 +1497,30 @@ bt.apply.ex2 <- function
 	if(is.null(apply.period.ends)) {	
 		for( i in 1:nsymbols )
 			if(is.null(period.ends)) 
-				set.result.helper(b[[ symbolnames[i] ]], index, xfun, out, i, ...)
+				set_result_helper(b[[ symbolnames[i] ]], index, xfun, out, i, ...)
 			else
-				set.result.helper(b[[ symbolnames[i] ]][period.ends,], period.ends, xfun, out, i, ...)
+				set_result_helper(b[[ symbolnames[i] ]][period.ends,], period.ends, xfun, out, i, ...)
 	} else {	
 		for( i in 1:nsymbols ) {
 			x = coredata(iif(is.null(period.ends), b[[ symbolnames[i] ]], b[[ symbolnames[i] ]][period.ends,]))
 			for( j in apply.period.ends )
 				if(is.null(period.ends))
-					set.result.helper(x[1:j,,drop=F], j, xfun, out, i, ...)
+					set_result_helper(x[1:j,,drop=F], j, xfun, out, i, ...)
 				else # i.e. run quaterly on the monthly data
-					set.result.helper(x[1:map[j],,drop=F], j, xfun, out, i, ...)
+					set_result_helper(x[1:map[j],,drop=F], j, xfun, out, i, ...)
 		}
 	}
 
-	bt.apply.fill.gaps.helper(out, fill.gaps)
+	bt_apply_fill_gaps_helper(out, fill.gaps)
 }
 
 
 
-# out = bt.apply2(data, function(x) ATR(HLC(x)))
+# out = bt_apply2(data, function(x) ATR(HLC(x)))
 # out$atr
 # make sure not to use a rolling window functions if apply.periodicity is given!!!
 #' @export 
-bt.apply.matrix.ex2 <- function
+bt_apply_matrix_ex2 <- function
 (
 	b,			# matrix
 	xfun=Cl,	# user specified function
@@ -1537,7 +1537,7 @@ bt.apply.matrix.ex2 <- function
 	fill.gaps = F	# fill gaps introduced by having different periodicity
 )
 {
-	temp = bt.apply.setup.helper(b, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
+	temp = bt_apply_setup_helper(b, xfun, periodicity, period.ends, apply.periodicity, apply.period.ends)
 	period.ends = temp$period.ends
 	apply.period.ends = temp$apply.period.ends
 	map = temp$map
@@ -1553,24 +1553,24 @@ bt.apply.matrix.ex2 <- function
 	if(is.null(apply.period.ends)) {	
 		for( i in 1:nsymbols )
 			if(is.null(period.ends)) 
-				set.result.helper(b[,i], index, xfun, out, i, ...)
+				set_result_helper(b[,i], index, xfun, out, i, ...)
 			else
-				set.result.helper(b[period.ends,i], period.ends, xfun, out, i, ...)
+				set_result_helper(b[period.ends,i], period.ends, xfun, out, i, ...)
 	} else {	
 		for( i in 1:nsymbols ) {
 			x = coredata(iif(is.null(period.ends), b[,i], b[period.ends,i]))
 			for( j in apply.period.ends )
 				if(is.null(period.ends)) {
-					set.result.helper(x[1:j], j, xfun, out, i, ...)		
+					set_result_helper(x[1:j], j, xfun, out, i, ...)		
 				} else # i.e. run quaterly on the monthly data
-					set.result.helper(x[1:map[j]], j, xfun, out, i, ...)		
+					set_result_helper(x[1:map[j]], j, xfun, out, i, ...)		
 		}
 	}
 	
-	bt.apply.fill.gaps.helper(out, fill.gaps)
+	bt_apply_fill_gaps_helper(out, fill.gaps)
 }
 
-set.result.helper = function(x, j, xfun, out, i, ...) {
+set_result_helper = function(x, j, xfun, out, i, ...) {
 	msg = try( xfun( iif(is.xts(x), coredata(x), x), ... ) , silent=TRUE)
 	if (class(msg)[1] == 'try-error')
 		warning(i, msg, '\n')			
@@ -1593,36 +1593,36 @@ set.result.helper = function(x, j, xfun, out, i, ...) {
 	}
 }
 
-bt.apply.fill.gaps.helper = function(out, fill.gaps) {
+bt_apply_fill_gaps_helper = function(out, fill.gaps) {
 	if(out$n == 1) {
 		if(fill.gaps)
-    		bt.apply.matrix(out$out, ifna.prev)
+    		bt_apply_matrix(out$out, ifna_prev)
 		else
 			out$out
 	} else {
 		if(fill.gaps)
 			for(result.name in out$name)
-				out[[result.name]] = bt.apply.matrix(out[[result.name]], ifna.prev)
+				out[[result.name]] = bt_apply_matrix(out[[result.name]], ifna_prev)
 		rm(list = c('n','name'), envir = out)
 		out
 	}		
 }
 
 
-# test for bt.apply functions
-bt.apply.test = function() {
+# test for bt_apply functions
+bt_apply_test = function() {
 	#*****************************************************************
 	# Load historical data
 	#****************************************************************** 
-	load.packages('quantmod,quadprog,corpcor,lpSolve')
+	load_packages('quantmod,quadprog,corpcor,lpSolve')
 	tickers = spl('SPY,QQQ,EEM,IWM,EFA,TLT,IYR,GLD')
 
 	data = env()
 	getSymbols(tickers, src = 'yahoo', from = '1980-01-01', env = data, auto.assign = T)
 		for(i in ls(data)) data[[i]] = adjustOHLC(data[[i]], use.Adjusted=T)							
-	bt.prep(data, align='remove.na', dates='1990::') 
+	bt_prep(data, align='remove.na', dates='1990::') 
 
-	t2 = bt.apply.ex2(data, function(x) ATR(HLC(x)))
+	t2 = bt_apply_ex2(data, function(x) ATR(HLC(x)))
 	#t2$atr
 	#ls(t2)
 
@@ -1630,56 +1630,56 @@ bt.apply.test = function() {
 
 	prices = data$prices
 	
-	t01 = bt.apply.matrix(prices, SMA, 100)	
-	t02 = bt.apply(data, function(x) SMA(Cl(x),100))
-	t11 = bt.apply.matrix.ex(prices, SMA, 100)	
-	t12 = bt.apply.ex(data, function(x) SMA(Cl(x),100))
-	t21 = bt.apply.matrix.ex2(prices, SMA, 100)	
-	t22 = bt.apply.ex2(data, function(x) SMA(Cl(x),100))
+	t01 = bt_apply_matrix(prices, SMA, 100)	
+	t02 = bt_apply(data, function(x) SMA(Cl(x),100))
+	t11 = bt_apply_matrix_ex(prices, SMA, 100)	
+	t12 = bt_apply_ex(data, function(x) SMA(Cl(x),100))
+	t21 = bt_apply_matrix_ex2(prices, SMA, 100)	
+	t22 = bt_apply_ex2(data, function(x) SMA(Cl(x),100))
 	print(all.equal(t01, t02))
 	print(all.equal(t01, t11))
 	print(all.equal(t01, t12))
 	print(all.equal(t01, t21))
 	print(all.equal(t01, t22))
 
-	t11 = bt.apply.matrix.ex(prices, SMA, 10, periodicity='months')
-	t12 = bt.apply.ex(data, function(x) SMA(Cl(x),10), periodicity='months')
-	t21 = bt.apply.matrix.ex2(prices, SMA, 10, periodicity='months')
-	t22 = bt.apply.ex2(data, function(x) SMA(Cl(x),10), periodicity='months')
+	t11 = bt_apply_matrix_ex(prices, SMA, 10, periodicity='months')
+	t12 = bt_apply_ex(data, function(x) SMA(Cl(x),10), periodicity='months')
+	t21 = bt_apply_matrix_ex2(prices, SMA, 10, periodicity='months')
+	t22 = bt_apply_ex2(data, function(x) SMA(Cl(x),10), periodicity='months')
 	print(all.equal(t11, t12))
 	print(all.equal(t11, t21))
 	print(all.equal(t11, t22))
 
 
 	# Make sure not to use a rolling window functions if apply.periodicity is given
-	# bt.apply.matrix(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
-	t11 = bt.apply.matrix.ex(prices, function(x) mean(mlast(x,100)), apply.periodicity='quarters')
-	t12 = bt.apply.ex(data, function(x) mean(mlast(Cl(x),100)), apply.periodicity='quarters')
-	t21 = bt.apply.matrix.ex2(prices, function(x) mean(mlast(x,100)), apply.periodicity='quarters')
-	t22 = bt.apply.ex2(data, function(x) mean(mlast(Cl(x),100)), apply.periodicity='quarters')
+	# bt_apply_matrix(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
+	t11 = bt_apply_matrix_ex(prices, function(x) mean(mlast(x,100)), apply.periodicity='quarters')
+	t12 = bt_apply_ex(data, function(x) mean(mlast(Cl(x),100)), apply.periodicity='quarters')
+	t21 = bt_apply_matrix_ex2(prices, function(x) mean(mlast(x,100)), apply.periodicity='quarters')
+	t22 = bt_apply_ex2(data, function(x) mean(mlast(Cl(x),100)), apply.periodicity='quarters')
 	print(all.equal(t11, t12))
 	print(all.equal(t11, t21))
 	print(all.equal(t11, t22))
 
 
-	t11 = bt.apply.matrix.ex(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
-	t12 = bt.apply.ex(data, function(x) mean(mlast(Cl(x),10)), periodicity='months', apply.periodicity='quarters') 
-	t21 = bt.apply.matrix.ex2(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
-	t22 = bt.apply.ex2(data, function(x) mean(mlast(Cl(x),10)), periodicity='months', apply.periodicity='quarters') 
+	t11 = bt_apply_matrix_ex(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
+	t12 = bt_apply_ex(data, function(x) mean(mlast(Cl(x),10)), periodicity='months', apply.periodicity='quarters') 
+	t21 = bt_apply_matrix_ex2(prices, function(x) mean(mlast(x,10)), periodicity='months', apply.periodicity='quarters') 
+	t22 = bt_apply_ex2(data, function(x) mean(mlast(Cl(x),10)), periodicity='months', apply.periodicity='quarters') 
 	print(all.equal(t11, t12))
 	print(all.equal(t11, t21))
 	print(all.equal(t11, t22))
 
 
 
-	load.packages('rbenchmark')
+	load_packages('rbenchmark')
 
-	test01 = function() { t01 = bt.apply.matrix(prices, SMA, 100)	}
-	test02 = function() { t02 = bt.apply(data, function(x) SMA(Cl(x),100)) }
-	test11 = function() { t11 = bt.apply.matrix.ex(prices, SMA, 100)	}
-	test12 = function() { t12 = bt.apply.ex(data, function(x) SMA(Cl(x),100)) }
-	test21 = function() { t21 = bt.apply.matrix.ex2(prices, SMA, 100)	 }
-	test22 = function() { t22 = bt.apply.ex2(data, function(x) SMA(Cl(x),100)) }
+	test01 = function() { t01 = bt_apply_matrix(prices, SMA, 100)	}
+	test02 = function() { t02 = bt_apply(data, function(x) SMA(Cl(x),100)) }
+	test11 = function() { t11 = bt_apply_matrix_ex(prices, SMA, 100)	}
+	test12 = function() { t12 = bt_apply_ex(data, function(x) SMA(Cl(x),100)) }
+	test21 = function() { t21 = bt_apply_matrix_ex2(prices, SMA, 100)	 }
+	test22 = function() { t22 = bt_apply_ex2(data, function(x) SMA(Cl(x),100)) }
 
 	
   	library(rbenchmark)
@@ -1704,30 +1704,30 @@ bt.apply.test = function() {
 #' @export 
 ###############################################################################
 exrem <- function(x) {        
-    temp = c(0, ifna(ifna.prev(x),0))
+    temp = c(0, ifna(ifna_prev(x),0))
         itemp = which(temp != mlag(temp))
     x[] = NA
     x[(itemp-1)] = temp[itemp]    
     return(x)
 }
 
-exrem.test <- function() {
+exrem_test <- function() {
 	exrem(c(NA,1,1,0,1,1,NA,0))
 }
 
 #' @export 
-bt.exrem <- function(weight)
+bt_exrem <- function(weight)
 {
-    bt.apply.matrix(weight, exrem)
+    bt_apply_matrix(weight, exrem)
 }
 
 
 ###############################################################################
 # Backtest Test function
 ###############################################################################
-bt.test <- function()
+bt_test <- function()
 {
-	load.packages('quantmod')
+	load_packages('quantmod')
 	
 	#*****************************************************************
 	# Load historical data
@@ -1737,7 +1737,7 @@ bt.test <- function()
 
 	data <- new.env()
 	getSymbols(tickers, src = 'yahoo', from = '1970-01-01', env = data, auto.assign = T)
-	bt.prep(data, align='keep.all', dates='1970::2011')
+	bt_prep(data, align='keep.all', dates='1970::2011')
 
 	#*****************************************************************
 	# Code Strategies
@@ -1747,13 +1747,13 @@ bt.test <- function()
 	
 	# Buy & Hold	
 	data$weight[] = 1
-	buy.hold = bt.run(data)	
+	buy.hold = bt_run(data)	
 
 	# MA Cross
-	sma = bt.apply(data, function(x) { SMA(Cl(x), 200) } )	
+	sma = bt_apply(data, function(x) { SMA(Cl(x), 200) } )	
 	data$weight[] = NA
 		data$weight[] = iif(prices >= sma, 1, 0)
-	sma.cross = bt.run(data, trade.summary=T)			
+	sma.cross = bt_run(data, trade.summary=T)			
 
 	#*****************************************************************
 	# Create Report
@@ -1761,17 +1761,17 @@ bt.test <- function()
 		
 					
 png(filename = 'plot1.png', width = 600, height = 500, units = 'px', pointsize = 12, bg = 'white')										
-	plotbt.custom.report.part1( sma.cross, buy.hold)			
+	plotbt_custom_report_part1( sma.cross, buy.hold)			
 dev.off()	
 
 
 png(filename = 'plot2.png', width = 1200, height = 800, units = 'px', pointsize = 12, bg = 'white')	
-	plotbt.custom.report.part2( sma.cross, buy.hold)			
+	plotbt_custom_report_part2( sma.cross, buy.hold)			
 dev.off()	
 	
 
 png(filename = 'plot3.png', width = 600, height = 500, units = 'px', pointsize = 12, bg = 'white')	
-	plotbt.custom.report.part3( sma.cross, buy.hold)			
+	plotbt_custom_report_part3( sma.cross, buy.hold)			
 dev.off()	
 
 
@@ -1779,7 +1779,7 @@ dev.off()
 
 	# put all reports into one pdf file
 	pdf(file = 'report.pdf', width=8.5, height=11)
-		plotbt.custom.report(sma.cross, buy.hold, trade.summary=T)
+		plotbt_custom_report(sma.cross, buy.hold, trade.summary=T)
 	dev.off()	
 
 	#*****************************************************************
@@ -1788,23 +1788,23 @@ dev.off()
 	
 	data$weight[] = NA
 		data$weight$SPY = 1
-	temp = bt.run(data)
+	temp = bt_run(data)
 
 	data$weight[] = NA
 		data$weight$SPY = 2
-	temp = bt.run(data)
+	temp = bt_run(data)
 
 	data$weight[] = NA
 		data$weight$SPY = 1
 		capital = 100000
 		data$weight[] = (capital / prices) * data$weight
-	temp = bt.run(data, type='share', capital=capital)
+	temp = bt_run(data, type='share', capital=capital)
 
 	data$weight[] = NA
 		data$weight$SPY = 2
 		capital = 100000
 		data$weight[] = (capital / prices) * data$weight
-	temp = bt.run(data, type='share', capital=capital)
+	temp = bt_run(data, type='share', capital=capital)
 	
 }
 
@@ -1815,40 +1815,41 @@ dev.off()
 #' @export 
 ###############################################################################
 # Note xts::last may be masked if you use dplyr 
-compute.cagr <- function(equity, nyears = NA) 
+compute_cagr <- function(equity, nyears = NA) 
 {
 	if(is.numeric(nyears))
 		as.double( last(equity,1)^(1/nyears) - 1 )
 	else 
-		as.double( xts::last(equity,1)^(1/compute.nyears(equity)) - 1 )
+		as.double( xts::last(equity,1)^(1/compute_nyears(equity)) - 1 )
 }
 
 #' @export 
-compute.nyears <- function(x) 
+compute_nyears <- function(x) 
 {
-	as.double(diff(as.Date(range(index.xts(x)))))/365
+	as.double(diff(as.Date(range(index_xts(x)))))/365
 }
 
 #' @export 
-compute.raw.annual.factor = function(x) {
-	round( nrow(x) / compute.nyears(x) )
+compute_raw_annual_factor = function(x) {
+	round( nrow(x) / compute_nyears(x) )
 }
 
 # 252 - days, 52 - weeks, 26 - biweeks, 12-months, 6,4,3,2,1
 #' @export 
-compute.annual.factor = function(x) {
+compute_annual_factor = function(x) {
 	possible.values = c(252,52,26,13,12,6,4,3,2,1)
-	index = which.min(abs( compute.raw.annual.factor(x) - possible.values ))
+	index = which.min(abs( compute_raw_annual_factor(x) - possible.values ))
 	round( possible.values[index] )
 }
 
+#' @title Sharpe Ratio
 #' @export 
 #' @details Key function to calculate sharpe ratio. 
 #'  ED: standard way is 
 #'  arithmetic monthly / annualzed monthly vol (geom).
-compute.sharpe <- function(x) 
+compute_sharpe <- function(x) 
 { 
-	temp = compute.annual.factor(x)
+	temp = compute_annual_factor(x)
 	x = as.vector(coredata(x))
 	return(sqrt(temp) * mean(x)/sd(x) ) 
 }
@@ -1858,16 +1859,16 @@ compute.sharpe <- function(x)
 # The maximum drawdown is typically measured over a three year period.
 # Calmar Ratio = CAGR / MAXDD
 #' @export 
-compute.calmar <- function(x)
+compute_calmar <- function(x)
 {
-    compute.cagr(x) / compute.max.drawdown(x)
+    compute_cagr(x) / compute_max_drawdown(x)
 }
 
 # R2 equals the square of the correlation coefficient
 #' @export 
-compute.R2 <- function(equity) 
+compute_R2 <- function(equity) 
 {
-	x = as.double(index.xts(equity))
+	x = as.double(index_xts(equity))
 	y = equity
 	#summary(lm(y~x))
 	return( cor(y,x)^2 )
@@ -1876,35 +1877,35 @@ compute.R2 <- function(equity)
 # http://cssanalytics.wordpress.com/2009/10/15/ft-portfolio-with-dynamic-hedging/
 # DVR is the Sharpe Ratio times the R-squared of the equity curve
 #' @export 
-compute.DVR <- function(bt) 
+compute_DVR <- function(bt) 
 {
-	return( compute.sharpe(bt$ret) * compute.R2(bt$equity) )
+	return( compute_sharpe(bt$ret) * compute_R2(bt$equity) )
 }
 
 #' @export 
-compute.risk <- function(x) 
+compute_risk <- function(x) 
 { 
-	temp = compute.annual.factor(x)
+	temp = compute_annual_factor(x)
 	x = as.vector(coredata(x))
 	return( sqrt(temp)*sd(x) ) 
 }
 
 #' @export 
-compute.drawdown <- function(x) 
+compute_drawdown <- function(x) 
 { 
 	return(x / cummax(c(1,x))[-1] - 1)
 }
 
 #' @export 
-compute.max.drawdown <- function(x) 
+compute_max_drawdown <- function(x) 
 { 
-	as.double( min(compute.drawdown(x)) )
+	as.double( min(compute_drawdown(x)) )
 }
 
 #' @export 
-compute.avg.drawdown <- function(x) 
+compute_avg_drawdown <- function(x) 
 { 
-	drawdown = c( 0, compute.drawdown(coredata(x)), 0 )
+	drawdown = c( 0, compute_drawdown(coredata(x)), 0 )
 	dstart = which( drawdown == 0 & mlag(drawdown, -1) != 0 )
 	dend = which(drawdown == 0 & mlag(drawdown, 1) != 0 )
 	drawdowns = apply( cbind(dstart, dend), 1, function(x) min(drawdown[ x[1]:x[2] ], na.rm=T) )
@@ -1912,9 +1913,9 @@ compute.avg.drawdown <- function(x)
 }
 
 #' @export 
-compute.cdar <- function(x, probs=0.05) 
+compute_cdar <- function(x, probs=0.05) 
 { 
-	drawdown = c( 0, compute.drawdown(coredata(x)), 0 )
+	drawdown = c( 0, compute_drawdown(coredata(x)), 0 )
 	dstart = which( drawdown == 0 & mlag(drawdown, -1) != 0 )
 	dend = which(drawdown == 0 & mlag(drawdown, 1) != 0 )
 	drawdowns = apply( cbind(dstart, dend), 1, function(x) min(drawdown[ x[1]:x[2] ], na.rm=T) )
@@ -1925,26 +1926,26 @@ compute.cdar <- function(x, probs=0.05)
 }	
 
 #' @export 
-compute.exposure <- function(weight) 
+compute_exposure <- function(weight) 
 { 
 	sum( apply(weight, 1, function(x) sum(x != 0) ) != 0 ) / nrow(weight) 
 }
 
 #' @export 
-compute.var <- function(x, probs=0.05) 
+compute_var <- function(x, probs=0.05) 
 { 
 	quantile( coredata(x), probs=probs)
 }
 
 #' @export 
-compute.cvar <- function(x, probs=0.05) 
+compute_cvar <- function(x, probs=0.05) 
 { 
 	x = coredata(x)
 	mean( x[ x < quantile(x, probs=probs) ] )
 }
 
 #' @export 
-compute.stats <- function(data, fns, do.na.omit = T) 
+compute_stats <- function(data, fns, do.na.omit = T) 
 {
 	out = matrix(double(), len(fns), len(data))
 		colnames(out) = names(data)
@@ -1952,7 +1953,7 @@ compute.stats <- function(data, fns, do.na.omit = T)
 if( do.na.omit )
 	for(c in 1:len(data)) {
 		for(r in 1:len(fns)) {
-			out[r,c] = match.fun(fns[[r]])( fast.na.omit(data[[c]]) )
+			out[r,c] = match.fun(fns[[r]])( fast_na_omit(data[[c]]) )
 		}
 	}
 else
@@ -1969,7 +1970,7 @@ else
 # Example to illustrate a simeple backtest
 #' @export 
 ###############################################################################
-bt.simple <- function(data, signal, silent = F) 
+bt_simple <- function(data, signal, silent = F) 
 {
 	# lag singal
 	signal = Lag(signal, 1)
@@ -1982,7 +1983,7 @@ bt.simple <- function(data, signal, silent = F)
 	ret = ROC(Cl(data), type='discrete')
 	ret[1] = 0
 	
-	# compute stats	
+	# compute_stats	
     n = nrow(ret)
     bt <- list()
     	bt$ret = ret * signal
@@ -2000,21 +2001,21 @@ bt.simple <- function(data, signal, silent = F)
 	return(bt)
 }
 
-bt.simple.test <- function()
+bt_simple_test <- function()
 {
-	load.packages('quantmod')
+	load_packages('quantmod')
 	
 	# load historical prices from Yahoo Finance
 	data = getSymbols('SPY', src = 'yahoo', from = '1980-01-01', auto.assign = F)
 
 	# Buy & Hold
 	signal = rep(1, nrow(data))
-    buy.hold = bt.simple(data, signal)
+    buy.hold = bt_simple(data, signal)
         
 	# MA Cross
 	sma = SMA(Cl(data),200)
 	signal = ifelse(Cl(data) > sma, 1, 0)
-    sma.cross = bt.simple(data, signal)
+    sma.cross = bt_simple(data, signal)
         
 	# Create a chart showing the strategies perfromance in 2000:2009
 	dates = '2000::2009'
@@ -2040,7 +2041,7 @@ bt.simple.test <- function()
 #' \dontrun{ 
 #' weight = c(0.1, 0.6, 0.2, 0.1, 0, -0.1, -0.6, -0.2, -0.1, 0)
 #' weight = matrix(weight, nrow=2, byrow=TRUE)
-#' print(bt.apply.min.weight(weight, 0.1))
+#' print(bt_apply_min_weight(weight, 0.1))
 #' }
 #' @author Ivan Popivanov and Michael Kapler
 #' @export 
@@ -2052,7 +2053,7 @@ bt.simple.test <- function()
 #      }    
 #   }
 ###############################################################################
-bt.apply.min.weight <- function
+bt_apply_min_weight <- function
 (
 	weight, 
 	long.min.weight = 0.1, 
@@ -2077,32 +2078,32 @@ bt.apply.min.weight <- function
 	return(pos.mat + neg.mat)
 } 
 
-test.bt.apply.min.weight <- function()
+test_bt_apply_min_weight <- function()
 {
 	data = c(0.1, 0.6, 0.2, 0.1, 0, -0.1, -0.6, -0.2, -0.1, 0)
 	mm = matrix(data=data, nrow=2, byrow=TRUE)
-	print(bt.apply.min.weight(mm, 0.1))
-	print(bt.apply.min.weight(mm, 0.2))
+	print(bt_apply_min_weight(mm, 0.1))
+	print(bt_apply_min_weight(mm, 0.2))
    
 	data = c(0.1, 0.6, 0.2, 0.1, 0, -0.1, -0.6, -0.2, -0.1, 0)
 	mm = matrix(data=data, nrow=1, byrow=TRUE)
-	print(bt.apply.min.weight(mm, 0.1))
-	print(bt.apply.min.weight(mm, 0.2))
+	print(bt_apply_min_weight(mm, 0.1))
+	print(bt_apply_min_weight(mm, 0.2))
    
 	data = c(0.1, 0.6, 0.2, 0.1, 0, -0.2, -0.5, -0.3, -0.1, 0)
 	mm = matrix(data=data, nrow=1, byrow=TRUE)
-	print(bt.apply.min.weight(mm, 0.1))
-	print(bt.apply.min.weight(mm, 0.2))
+	print(bt_apply_min_weight(mm, 0.1))
+	print(bt_apply_min_weight(mm, 0.2))
 }
 
 ###############################################################################
 #' Round weights
 #' 
-#' Similar idea to bt.apply.min.weight
+#' Similar idea to bt_apply_min_weight
 #' 
 #' @export 
 ###############################################################################
-bt.apply.round.weight <- function
+bt_apply_round_weight <- function
 (
 	weight, 
 	long.round.weight = 5/100, 
@@ -2132,7 +2133,7 @@ bt.apply.round.weight <- function
 #' 
 #' @export 
 ###############################################################################
-bt.start.dates <- function
+bt_start_dates <- function
 (
 	b 					# enviroment with symbols time series
 ) 
@@ -2151,7 +2152,7 @@ bt.start.dates <- function
 }
 
 #' @export 
-bt.end.dates <- function
+bt_end_dates <- function
 (
 	b 					# enviroment with symbols time series
 ) 
@@ -2173,18 +2174,18 @@ bt.end.dates <- function
 ###############################################################################
 #' Append today's quotes
 #' 
-#' data.today = getQuote.yahoo.today(ls(data))
+#' data.today = getQuote_yahoo_today(ls(data))
 #' 	print(data.today)
-#' bt.append.today(data, data.today)
+#' bt_append_today(data, data.today)
 #' 
 #' @export 
 ###############################################################################
-bt.append.today <- function(b, data.today) {
-	date.column = find.names('Date',data.today)
+bt_append_today <- function(b, data.today) {
+	date.column = find_names('Date',data.today)
 	valid.index = which(!is.na(data.today[,date.column,with=F]))	
 	data.today = data.today[valid.index]
 	
-	data = make.stock.xts(read.xts(data.today, date.column=date.column,format='%m/%d/%Y', decreasing=NULL))	
+	data = make_stock_xts(read_xts(data.today, date.column=date.column,format='%m/%d/%Y', decreasing=NULL))	
 		tickers = data.today$Symbol
 		Yesterday = data.today$Yesterday	
 	
@@ -2193,6 +2194,6 @@ bt.append.today <- function(b, data.today) {
 		if(is.null(b[[ tickers[i] ]])) next
 		if( last(index(data[i,])) > last(index(b[[ tickers[i] ]])) )
 			b[[ tickers[i] ]] = rbind(data[i,], b[[ tickers[i] ]])
-		#b[[ tickers[i] ]] = extend.data(env[[ s ]], data[[ gsub('\\^', '', map[[ s ]][i]) ]], scale=T)
+		#b[[ tickers[i] ]] = extend_data(env[[ s ]], data[[ gsub('\\^', '', map[[ s ]][i]) ]], scale=T)
 	}
 }

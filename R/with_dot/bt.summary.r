@@ -130,13 +130,12 @@ trade_summary <- function (bt) {
 }
 
 ###############################################################################
-# Backtest Detail summary
+#' @title  Backtest Detail summary
 #' @details This is the key function used to output summary statistics of a bt.
 #' @details Modified this so it can take in different summary functions.
 #' @details TODO (Ed): check this sharpe ratio makes sense.
 #' @details looks like he got this from http://mysimplequant.blogspot.com/p/trading-system-performance-indicators.html
 #' @export 
-###############################################################################
 bt.detail.summary <- function
 (
 	bt,		# backtest object
@@ -377,9 +376,9 @@ plotbt.holdings.time <- function(weight, smain='')
 
 ###############################################################################
 # Plot monthly return table
+#' @title Tabulate calendar returns
 #' @details TODO (Ed): better not to use index to avoid confusion with xts::index
 #' @export 
-###############################################################################
 plotbt.monthly.table <- function(equity, make.plot = TRUE, smain = '') 
 {
 	equity = map2monthly(equity)
