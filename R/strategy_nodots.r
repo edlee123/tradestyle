@@ -1891,7 +1891,7 @@ min_var2 <- function(power.function = 1)
 	#' @export 	
 	min_shrinkage <- function( hist, hist.all ) {
 		correlation = cor(hist, use='complete.obs', method='pearson')
-		create_cov_matrix(min_correlation), hist)
+		create_cov_matrix(min(correlation), hist)
 	}
 	
 	#' @export 	

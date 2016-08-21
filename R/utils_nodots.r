@@ -1201,7 +1201,7 @@ if (is.matrix(x) || (is.data.frame(x) && !is.data.table(x)) ) {
   filename = x  
 if(!is.data.table(x)) {
   # set autostart
-  out = fread_filename, stringsAsFactors=F, sep=sep, autostart=2, skip=skip)
+  out = fread(filename, stringsAsFactors=F, sep=sep, autostart=2, skip=skip)
     setnames(out,gsub(' ', '_', trim(colnames(out)))) 
 } else out = x  
 
@@ -1287,7 +1287,7 @@ read_xts_test <- function() {
     out = read.csv(filename, stringsAsFactors=F)
   }
   test2 <- function() {
-    out1 = fread_filename, stringsAsFactors=F)
+    out1 = fread(filename, stringsAsFactors=F)
   }
   test3 <- function() {
     out2 = scan(filename, what=list('',double(0), double(0),double(0),double(0),double(0),double(0)), skip=1, sep=',', quiet =T)

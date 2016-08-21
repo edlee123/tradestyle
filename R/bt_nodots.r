@@ -1450,7 +1450,7 @@ bt_apply_setup_helper <- function(m, xfun, periodicity, period.ends, apply.perio
 	if(!is.null(apply.period.ends) && !is.null(period.ends)) {
 		map = array(NA, nrow(m))
 			map[period.ends] = 1:len(period.ends)
-			map = ifna_prev_map)
+			map = ifna_prev(map)
 			map = ifna(map,1)
 	}
 	

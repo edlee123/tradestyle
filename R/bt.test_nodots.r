@@ -1534,23 +1534,18 @@ bt_aa_test_new <- function()
 	obj = portfolio_allocation_helper(data$prices, 
 		periodicity = 'months', lookback.len = 60, 
 		min.risk.fns = list(
-			EW=equal_weight_portfolio,
-			RP=risk_parity_portfolio(),
+			EW = equal_weight_portfolio,
+			RP = risk_parity_portfolio(),
 			MD=max_div_portfolio,						
-			
 			MV=min_var_portfolio,
 			MVE=min_var_excel_portfolio,
 			MV2=min_var2_portfolio,
-			
 			MC=min_corr_portfolio,
 			MCE=min_corr_excel_portfolio,
 			MC2=min_corr2_portfolio,
-			
-			MS=max_sharpe_portfolio(),
+			MS = max_sharpe_portfolio(),
 			ERC = equal_risk_contribution_portfolio,
-
-			# target retunr / risk
-			TRET.12 = target_return_portfolio(12/100),								
+			TRET.12 = target_return_portfolio(12/100),								# target retunr / risk
 			TRISK.10 = target_risk_portfolio(10/100),
 		
 			# cluster
@@ -1558,7 +1553,7 @@ bt_aa_test_new <- function()
 			C.RP = distribute_weights(risk_parity_portfolio(), cluster.group),
 			
 			# rso
-			RSO.RP.5 = rso_portfolio_risk_parity_portfolio(), 5, 500), 
+			RSO.RP.5 = rso_portfolio(risk_parity_portfolio(), 5, 500), 
 			
 			# others
 			MMaxLoss = min_maxloss_portfolio,
@@ -7553,7 +7548,7 @@ bt_cluster_optimal_number_test <- function()
 		
 		for (j in 1:i) {
 			index = fit$cluster == j
-			min.cor[i,j] = min_correlation[index,index])
+			min.cor[i,j] = min(correlation[index,index])
 		}
 	}
 	
@@ -9863,7 +9858,7 @@ bt_signal_execution_lag_test <- function()
 		data$weight[period.ends,] = prices[period.ends,]
 	model = bt_run(data, do.lag = do.lag)
 	
-	last(as_xts_list(WEIGHT = model$weight, SIGNAL = prices)),20)
+	last(as.xts(list(WEIGHT = model$weight, SIGNAL = prices)), 20)
 }
 
 ###############################################################################

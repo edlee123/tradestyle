@@ -1858,8 +1858,7 @@ plot_ef <- function
 
 	ylim = range(c(0, y, 
 			min( sapply(efs, function(x) min_portfolio_return(x$weight,ia))) ),
-			max( sapply(efs, function(x) max(portfolio_return(x$weight,ia))) )
-			), na.rm = T)
+			max( sapply(efs, function(x) max(portfolio_return(x$weight,ia)))) , na.rm = T)
 
 	# convert x and y to_percentages
 	x = 100 * x

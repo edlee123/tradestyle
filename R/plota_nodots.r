@@ -914,7 +914,7 @@ plota_colors <- function(N) {
 	temp = list()
 	for(j in 1:length(col)) {
 		# find colors
-		temp[[j]] = colors()[grep_col[j],colors())]
+		temp[[j]] = colors()[grep(col[j],colors())]
 		
 		# remove numbered colors
 		temp[[j]] = temp[[j]][grep('^[^0-9]*$',temp[[j]])]
@@ -1040,7 +1040,7 @@ plota_stacked <- function
    		
    		for( y in y1 ) {   	
 			for (i in ncol(y) : 1) {
-		    	prep.y = c(0, rep_rowSums(y[, 1 : i, drop = FALSE]),each=2), 0)
+		    	prep.y = c(0, rep(rowSums(y[, 1 : i, drop = FALSE]),each=2), 0)
 		    	polygon(prep.x, prep.y, col = col[i], border = NA, angle = 90)
 		    }    
 		}

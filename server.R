@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
     if(!is.null(models_to_chart)){
       lookup <- lapply(models_to_chart, function(x)models[[x]])
       names(lookup) <- models_to_chart
-      out = plotbt.strategy.sidebyside(lookup, return.table=T, make.plot = F)
+      out = plotbt_strategy_sidebyside(lookup, return.table=T, make.plot = F)
       return(DT::datatable(out, options = 
                              list(searching = FALSE, 
                                   paging = F, 
@@ -73,7 +73,7 @@ shinyServer(function(input, output, session) {
   #' Calculate calendar rets.  Will extract first full year.
   output$calret_table <- DT::renderDataTable({ 
     pfname = input$portfolio 
-    calret = plotbt.monthly.table(models[[pfname]]$equity, smain = pfname, 
+    calret = plotbt_monthly_table(models[[pfname]]$equity, smain = pfname, 
                                   make.plot = F)
     
     monret = monthlyReturn(models[[pfname]]$equity)

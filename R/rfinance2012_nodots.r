@@ -629,7 +629,7 @@ png(filename = 'plot1.png', width = 600, height = 500, units = 'px', pointsize =
 	# number of matches for each pattern	
 	frequency = tapply(rep(1,nrow(all.patterns)), rownames(all.patterns), sum)
 	layout(1)
-	barplot_with_labels_frequency/100, 'Frequency for each Pattern')
+	barplot_with_labels(frequency/100, 'Frequency for each Pattern')
 dev.off()
 	
 

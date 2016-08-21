@@ -211,7 +211,7 @@ date_period_test = function() {
 date_week_ends <- function(dates, last.date=T) 
 { 
   ends = which(diff( 100*date_year(dates) + date_week(dates) ) != 0)
-  ends_add_last_date_ends, len(dates), last.date)
+  ends_add_last_date(ends, len(dates), last.date)
 }
 
 
@@ -220,7 +220,7 @@ date_week_ends <- function(dates, last.date=T)
 date_month_ends <- function(dates, last.date=T) 
 { 
   ends = which(diff( 100*date_year(dates) + date_month(dates) ) != 0)
-  ends_add_last_date_ends, len(dates), last.date)
+  ends_add_last_date(ends, len(dates), last.date)
 }
 
 
@@ -229,7 +229,7 @@ date_month_ends <- function(dates, last.date=T)
 date_quarter_ends <- function(dates, last.date=T) 
 { 
   ends = which(diff( 10*date_year(dates) + date_quarter(dates) ) != 0)
-  ends_add_last_date_ends, len(dates), last.date)
+  ends_add_last_date(ends, len(dates), last.date)
 }
 
 
@@ -238,7 +238,7 @@ date_quarter_ends <- function(dates, last.date=T)
 date_semiannual_ends = function(dates, last.date=T) 
 { 
   ends = which(diff( 10*date_year(dates) + date_semiannual(dates) ) != 0)
-  ends_add_last_date_ends, len(dates), last.date)
+  ends_add_last_date(ends, len(dates), last.date)
 }
 
 
@@ -247,7 +247,7 @@ date_semiannual_ends = function(dates, last.date=T)
 date_year_ends <- function(dates, last.date=T) 
 { 
   ends = which(diff( date_year(dates) ) != 0)
-  ends_add_last_date_ends, len(dates), last.date)
+  ends_add_last_date(ends, len(dates), last.date)
 }
 
 
@@ -485,7 +485,7 @@ date_ends = function(dates, periodicity, by=1, skip=0, last.date=T, calendar = N
                              })
   
   if( xts::is.xts(dates) ) dates = index(dates)		
-  ends = ends_add_last_date_ends, len(dates), last.date)		
+  ends = ends_add_last_date(ends, len(dates), last.date)		
   
   if( skip > 0) ends = ends[-c(1:skip)]
   if( by > 1) ends = ends[seq(1, len(ends), by=by)]

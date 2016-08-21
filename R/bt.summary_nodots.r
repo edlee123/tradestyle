@@ -106,8 +106,9 @@ sys_summary3 <- function (bt, trade.summary) {
 }
 
 
+# ' (ed) maybe rename the function trade_summary to not convuse with trade.summary?
 trade_summary <- function (bt) {
-  if( !is.null(bt_trade_summary) ) trade.summary = bt_trade_summary
+  if( !is.null(bt$trade.summary) ) trade.summary = bt$trade.summary # fixed _ to$
   out = list()
   if( !is.null(trade.summary) ) {
     out$Win.Percent = trade.summary$stats['win.prob', 'All']
@@ -188,7 +189,7 @@ engineering_returns_kpi <- function
 	trade.summary = NULL
 ) 
 {	
-	if( !is.null(bt_trade_summary) ) trade.summary = bt_trade_summary
+	if( !is.null(bt$trade_summary) ) trade.summary = bt$trade_summary
 	
 	out = list()
 	out$Period = join( format( range(index(bt$equity)), '%b%Y'), ' - ')
@@ -234,7 +235,9 @@ plotbt_strategy_sidebyside <- function
 	out = list()
 	
 	for( i in 1:len(models) ) {
-		out[[ names(models)[i] ]] = match.fun(perf.fn)(models[[ i ]])[[ perf.metric[1] ]]
+	  fn = match.fun(perf.fn)
+	  # try bt_detail_summary
+		out[[ names(models)[i] ]] = fn(models[[ i ]])[[ perf.metric[1] ]]
 	}
 	temp = list2matrix(out, keep.names=F)
 	if(make.plot) plot_table( temp, smain = perf.metric[1] )

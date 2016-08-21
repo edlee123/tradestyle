@@ -118,7 +118,7 @@ style_roll <- function(
   # Facto Loadings Regression over whole period
   #****************************************************************** 
   prices = xtsenv$prices
-  dates = index_xtsenv$prices)
+  dates = index(xtsenv$prices)
   
   # compute simple returns	 
   # xts knows to align the dates when subtracting xts

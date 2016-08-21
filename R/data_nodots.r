@@ -1509,10 +1509,11 @@ getSymbols_TB_test = function() {
     new.series = cumprod(reta)
     Close = spot[n] * new.series / new.series[n]    
     
-	plot.data = as_xts_list(
+	plot.data = as.xts(list(
 		Unadjusted = data[[i]]$Unadjusted, 
 		Adjusted = data[[i]]$Adjusted,
 		Implied.Close = make_xts(Close, index(data[[i]]))
+		
 	))
 
 png(filename = 'plot_CL_2009.png', width = 600, height = 500, units = 'px', pointsize = 12, bg = 'white')			    
@@ -1641,7 +1642,7 @@ data_ff_internal_one_file = function(filename) {
       name = trim(out[start.index])
       colnames0 = scan(text = out[(end.index-1)], what='', quiet=T)
       colnames1 = scan(text = out[end.index], what='', quiet=T)
-      colnames = paste(rep_colnames0, each = len(colnames1) / len(colnames0)), colnames1, sep='.')      
+      colnames = paste(rep(colnames0, each = len(colnames1) / len(colnames0)), colnames1, sep='.')      
     }
     colnames = gsub('-', '.', colnames)
     #out[start.index:end.index]
